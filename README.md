@@ -1,9 +1,7 @@
 # StopwatchApp - Cronômetro do Iphone - Recriado do zero
-## Marcos Augusto Rodrigues
 
+## Project screenshot
 ![image](https://github.com/therruner/StopwatchApp-ReactNative/blob/master/(iPhone%206_7_8)%20.png)
-
-
 
 ## About The Project
 
