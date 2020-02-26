@@ -1,8 +1,14 @@
 # StopwatchApp - Cronômetro do Iphone - Recriado do zero
 ## Marcos Augusto Rodrigues
-![cronômetro](https://github.com/therruner/-StopwatchApp/blob/master/cronometro.gif)
+
+![image](https://github.com/therruner/StopwatchApp-ReactNative/blob/master/(iPhone%206_7_8)%20.png)
+
+
 
 ## About The Project
+
+![cronômetro](https://github.com/therruner/-StopwatchApp/blob/master/cronometro.gif)
+
 This project was created to improve my skills in JavaScript and React Native, which will contribute to my studies. 
 I recreated the timer that comes on the iphone, using React Native, which was very rewarding and yielded good hours of study.
 
