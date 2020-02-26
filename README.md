@@ -22,7 +22,7 @@ https://www.youtube.com/watch?time_continue=1222&v=gWegskGYCtA&feature=emb_logo
 
 ### 1 - Run git clone
 
-https: git clone https://github.com/therruner/-personaPortfolio.git
+https: git clone https://github.com/therruner/StopwatchApp-ReactNative.git
 
 ### 2 - Open a project folder
 
