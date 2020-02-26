@@ -6,13 +6,18 @@ import moment from 'moment'
 
 
   function Timer({ interval, style }) {
+   
+    const pad = (n) => n < 10 ? '0' + n : n
 
     const duration = moment.duration(interval)
     const centiseconds = Math.floor(duration.milliseconds() / 10)
     return ( 
-    <Text style={style}>
-        {duration.minutes()}:{duration.seconds()},{centiseconds} 
-    </Text>
+     
+     <View style={styles.timerContainer}> 
+        <Text style={style}> {pad(duration.minutes())}:</Text>
+        <Text style={style}> {pad(duration.seconds())},</Text>
+        <Text style={style}> {pad(centiseconds)}</Text> 
+      </View>
 
     )
   }
@@ -35,6 +40,7 @@ import moment from 'moment'
 
   function Lap({ number, interval, fastest, slowest }) {
 
+
     const lapStyle = [   
       styles.lapText,
       fastest && styles.fastest,
@@ -45,7 +51,7 @@ import moment from 'moment'
       <View style={styles.lap}> 
 
       <Text style={lapStyle}>Lap {number}</Text>
-      <Timer style={lapStyle} interval={interval}/>
+      <Timer style={[lapStyle, styles.lapTimer]} interval={interval}/>
 
     </View>
 
@@ -55,12 +61,12 @@ import moment from 'moment'
 
   }
 
-  function LapsTable({ laps }) {
+  function LapsTable({ laps, timer }) {
     
     const finishedLaps = laps.slice(1)
     let min = Number.MAX_SAFE_INTEGER
     let max = Number.MIN_SAFE_INTEGER 
-    if(finishedLaps.length > 2) {
+    if(finishedLaps.length >= 2) {
       finishedLaps.forEach(lap => {
         if(lap < min) min = lap
         if(lap > max) max = lap
@@ -74,8 +80,8 @@ import moment from 'moment'
          {laps.map((lap, index) => (
            <Lap 
               number={laps.length - index} 
-              key={laps.length - index} 
-              interval={lap} 
+              key={laps.length - index}   
+              interval={index === 0 ? timer + lap: lap} 
               fastest={lap === min}
               slowest={lap === max}
             />
@@ -90,46 +96,142 @@ import moment from 'moment'
     <View style={styles.bottonsRow}>{ children }</View>
     )
   }
+
 export default class App extends Component {
 
   constructor(props) {
     super(props)
-    this.setState = {
-      
-    
+    this.state = {
       start: 0,
       now: 0,
       laps: [ ],
     }
   }
 
-  start = () => {
-
+  componentWillUnmount() {
+    clearInterval(this.timer)
   }
- 
+
+  start = () => {
+    const now = new Date().getTime()
+    this.setState({
+      start: now,
+      now,
+      laps: [0],
+  })
+  
+  this.timer = setInterval(() =>{
+    this.setState({now: new Date().getTime()})
+  }, 100)
+}
+
+  lap = () => {
+    const timestamp = new Date().getTime()
+    const { laps, now, start } = this.state
+    const [firstLap, ...other] = laps 
+    this.setState({
+      laps: [0, firstLap + now - start,...other],
+      start: timestamp,
+      now: timestamp,
+    })
+  }
+
+  stop = () => {
+    clearInterval(this.timer)
+    const { laps, now, start } = this.state
+    const [firstLap, ...other] = laps 
+    this.setState({
+      laps: [firstLap + now - start,...other],
+      start: 0,
+      now: 0,
+    })
+  }
+
+
+    reset = () => {
+      this.setState({
+        laps: [],
+        start: 0,
+        now: 0,
+      })
+    }
+
+    resume = () => {
+      const now = new Date().getTime()
+      this.setState({
+        start: now,
+        now,
+      })
+      this.timer = setInterval(() =>{
+        this.setState({now: new Date().getTime()})
+      }, 100)
+    }
+
+
+
   render() {
 
-    const { now, laps, start } =  this.setState
+    const { now, start, laps } =  this.state
     const timer = now - start
 
     return (
       <View style={styles.container}>
-       <Timer interval={timer} style={styles.timer}/>
+        <Timer 
+        interval={laps.reduce((total, curr) => total + curr, 0) + timer} 
+        style={styles.timer}
+       />
 
-       <ButtonsRow>
+       {
+         laps.length === 0 && (
+          <ButtonsRow>
+            
+            <RoundButton 
+              title='lap' 
+              color='#8b8b90' 
+              background='#151515' 
+              disabled/>
 
-        <RoundButton title='Reset' color='#FFFFFF' background='#3D3D3D'/>
+            <RoundButton
+                title='Start' 
+                color='#50D167' 
+                background='#1B361f'
+                onPress={this.start}
+              />
+         </ButtonsRow>
 
-        <RoundButton
-            title='Start' 
-            color='#50D167' 
-            background='#1B361f'
-            onPress={this.start}
+         )}
+
+  { start > 0 && (
+      
+      <ButtonsRow>
+         <RoundButton title='lap' color='#FFFFFF' background='#00009C' onPress={this.lap}/>
+            <RoundButton
+              title='stop' 
+              color='#E33935' 
+              background='#3C1715'
+              onPress={this.stop}
           />
 
-       </ButtonsRow>
+      </ButtonsRow>
+    )
+  }
+
+
+{ laps.length > 0 && start === 0 && (
       
-       <LapsTable laps={laps} />
+      <ButtonsRow>
+         <RoundButton title='Reset' color='#FFFFFF' background='#00009C' onPress={this.reset}/>
+            <RoundButton
+              title='Start' 
+              color='#50D167' 
+              background='#1B361f'
+              onPress={this.resume}
+          />
+
+      </ButtonsRow>
+    )
+  }
+       <LapsTable laps={laps} timer={timer} />
 
       </View>
     );
@@ -147,8 +249,12 @@ const styles = StyleSheet.create({
   },
   timer: {
     color: '#ffffff',
-    fontSize: 76,
+    fontSize: 65,
     fontWeight: '200',
+    width: 110,
+  },
+  lapTimer: {
+    width: 30,
   },
   button: {
     width: 80,
@@ -165,7 +271,7 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: 38,
-    borderWidth: 2,
+    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
 
@@ -179,7 +285,8 @@ const styles = StyleSheet.create({
   },
   lapText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 16,
+    width: 40,
   },
   lap: {
     flexDirection: 'row',
@@ -199,6 +306,7 @@ const styles = StyleSheet.create({
   },
   timerContainer: {
     flexDirection: 'row',
-  },
- 
+  }
+  
+
 });
